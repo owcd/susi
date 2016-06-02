@@ -1,0 +1,46 @@
+// main import
+@import 'bootstrap';
+
+// add library
+@import 'lib/fonts.less';
+
+// body
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.right {
+    text-align: right;
+}
+
+.tournament-round {
+    //padding: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+
+    .start-end-time {
+        //background-color: #ffff00;
+        border-bottom: 1px solid #DDDDDD;
+    }
+
+    .tournament-game {
+        //border-left: 1px solid #DDDDDD;
+        //border: 1px solid #DDDDDD;
+        //border-top: none;
+        //margin: 0px 5px;
+
+        .court-name {
+            font-weight: bold;
+        }
+
+        .game-team {
+            border-top: 1px solid #DDDDDD;
+            border-bottom: 1px solid #DDDDDD;
+        }
+
+        .game-team, .game-versus {
+            text-align: center;
+        }
+    }
+}

@@ -1,0 +1,27 @@
+<div class="col-md-12">
+    {{#x-select value=group class="form-control" as |xs|}}
+        {{#xs.option}}----{{/xs.option}}
+        {{#each groups as |g|}}
+            {{#xs.option value=g.id}}{{g.name}}{{/xs.option}}
+        {{/each}}
+    {{/x-select}}
+</div>
+<div class="col-md-12">
+    {{#x-select value=team1  class="form-control" as |xs|}}
+        {{#xs.option}}----{{/xs.option}}
+        {{#each teams as |t|}}
+            {{#xs.option value=t.id}}{{t.number}} / {{t.name}}{{/xs.option}}
+        {{/each}}
+    {{/x-select}}
+</div>
+<div class="col-md-12 game-versus">
+    vs
+</div>
+<div class="col-md-12">
+    {{#x-select value=team2 class="form-control" as |xs|}}
+        {{#xs.option}}----{{/xs.option}}
+        {{#each teams as |t|}}
+            {{#xs.option value=t.id}}{{t.number}} / {{t.name}}{{/xs.option}}
+        {{/each}}
+    {{/x-select}}
+</div>

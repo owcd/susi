@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Datum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each model as |tournament|}}
+                    <tr>
+                        <td>{{#link-to 'tournaments.tournament' tournament.id}}{{tournament.name}}{{/link-to}}</td>
+                        <td>{{date-format tournament.date format='DD.MM.YYYY'}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

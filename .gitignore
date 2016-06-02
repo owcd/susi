@@ -1,0 +1,10 @@
+# exclude modules and temp files
+*~
+*.bak
+.idea
+
+# generic exclude
+dist
+node_modules
+bower_components
+tmp

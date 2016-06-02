@@ -17,6 +17,13 @@ module.exports = (options = {}) ->
                 # prepare the object
                 [data, definition, type] = _prepare obj
 
+                # add type for attribute function
+                definition.typeForAttribute = (attribute, data) ->
+                    if data?._type?
+                        Inflector.pluralize(data._type)
+                    else
+                        Inflector.pluralize(attribute)
+
                 # create serializer
                 serializer = new JSONAPISerializer(type, _.extend(definition,
                     keyForAttribute: options.serializer?.keyForAttribute or 'camelCase'
@@ -29,41 +36,182 @@ module.exports = (options = {}) ->
                 if obj.included?
                     obj.included = _.filter obj.included, (include) ->
                         include.type isnt Inflector.pluralize(type)
-            else
+            else if obj? or meta?
                 # wrap with data
                 obj =
                     data: if _.isArray(obj) then [] else null
 
                 # add meta info
                 obj.meta = meta if meta?
+            else
+                @statusCode = 204
 
             # add api signature
             obj = _.extend(
                 jsonapi:
                     version: "1.0"
-            , obj)
+            , obj) if obj?
 
             # pass through orginal function
             orig obj
 
-    # initialize the deserializer
-    _deserializer = new JSONAPIDeserializer(
-        keyForAttribute: options.deserializer?.keyForAttribute or 'underscore_case'
-    )
+    # deserialize the body
+    _deserialize = (body) ->
+        # init the definitions
+        definition = {}
+
+        # enrich the object with ids from its relationships
+        if options.models? and body?.data?.type? and body.data.relationships?
+            # model
+            modelName = Inflector.camelize(Inflector.singularize(body.data.type))
+            if options.models[modelName]?
+                model = options.models[modelName]
+                _.each body.data.relationships, (relationship, key) ->
+                    # no association
+                    return unless model.associations[key]?
+                    association = model.associations[key]
+
+                    # maybe there are no attributes yet
+                    body.data.attributes = {} unless body.data.attributes?
+
+                    # switch by type of association
+                    identifier = null
+                    if association.isSingleAssociation
+                        identifier = association.identifier
+                    else
+                        identifier = association.associationAccessor
+
+                    # any data in relationship?
+                    data = relationship.data
+                    if data?
+                        # relationship data
+                        isSingle = not _.isArray(data)
+                        data = [data] if isSingle
+
+                        # assign data
+                        data = _.map data, (obj) ->
+                            obj.id
+
+                        # single?
+                        data = _.first data if isSingle
+
+                    # assign
+                    body.data.attributes[identifier] = data
+
+        # loop relationships
+        if body?.data?.relationships?
+            _.each body.data.relationships, (relationship, key) ->
+                if relationship.data? and (not _.isArray(relationship.data) or _.size(relationship.data) > 0)
+                    data = relationship.data
+                    data = _.first(data) if _.isArray data
+                    definition[data.type] =
+                        valueForRelationship: _valueForRelationship
+
+        # create deserializer
+        _deserializer = new JSONAPIDeserializer(_.extend(definition,
+            keyForAttribute: options.deserializer?.keyForAttribute or 'underscore_case'
+        ))
+
+        # deserialize
+        _deserializer.deserialize(body)
 
     # return the middleware
-    (req, res, next) ->
+    middleware = (req, res, next) ->
         # patch the json response
         if not res.__isJsonApiMasked
+            res.__json = res.json
             res.json = _serialize(res.json.bind(res))
             res.__isJsonApiMasked = true
 
         # decode the body
         if req.body?.data?
-            req.body = _deserializer.deserialize req.body
+            _deserialize(req.body).then((body) ->
+                req.body = body
+                next()
+            )
+        else
+            # proceed
+            next()
 
-        # proceed
-        next()
+    # error handling part
+    middleware.error = (err, req, res, next) ->
+        # initialize
+        httpCode = 500
+        errors = []
+
+        # wrap in array
+        err = [err] unless _.isArray(err)
+
+        # loop errors
+        for error, key in err
+            # init error with code
+            code = 500
+            title = 'Internal server error'
+
+            # error name given?
+            if error.name?
+                if error.name is 'PermissionDenied'
+                    code = 403
+                    title = 'This operation is forbidden'
+                else if error.name is 'Unauthorized'
+                    code = 401
+                    title = 'Please authorize yourself'
+                else if error.name is 'ObjectNotFound'
+                    code = 404
+                    title = 'Not Found'
+                else if error.name is 'SequelizeUniqueConstraintError'
+                    code = 409
+                    title = 'Conflict'
+                else if error.name in ['InvalidState', 'InvalidArgument']
+                    code = 400
+                    title = 'Bad Request'
+                else if error.name is 'NoContent'
+                    code = 204
+                    title = 'No Content'
+                else if error.name is 'NotImplemented'
+                    code = 501
+                    title = 'This is not implemented yet'
+                    # cleaning up the OAuth2Errors
+                else if error.name is 'OAuth2Error' and error.error is 'invalid_request'
+                    code = 401
+                    title = 'Please authorize yourself'
+                else if error.name is 'OAuth2Error' and error.error is 'wrong_credentials'
+                    code = 401
+
+            # set title
+            title = error.message if error.message? and error.message isnt ''
+
+            # error details given
+            details = {}
+            if error.details?
+                details = _.pick error.details, ['id', 'title', 'detail', 'status', 'source', 'meta']
+
+            # push error
+            errors.push _.extend
+                title: title
+                status: code
+            , details
+
+            # set httpCode
+            httpCode = code if key is 0
+
+        # send response
+        res.set 'Content-Type', 'application/vnd.api+json'
+        res.statusCode = httpCode
+        res.__json
+            jsonapi:
+                version: "1.0"
+            errors: errors
+
+    # return
+    middleware
+
+# default value for relationship
+_valueForRelationship = (relationship, included) ->
+    if included?
+        included
+    else
+        {id: relationship.id}
 
 # prepare the object for serialization
 _prepare = (obj, included = {}) ->
@@ -73,13 +221,7 @@ _prepare = (obj, included = {}) ->
     obj = [obj] if isSingle
 
     # prepare definition
-    map = {}
-    definition =
-        typeForAttribute: (attribute) ->
-            if map[attribute]?
-                Inflector.pluralize(map[attribute])
-            else
-                Inflector.pluralize(attribute)
+    definition =  {}
 
     # map object to data
     data = _.map obj, (element) ->
@@ -106,6 +248,7 @@ _prepare = (obj, included = {}) ->
 
         # object attributes
         attributes = _.without(_.keys(plain), primary)
+        plain._type = type
 
         # circular reference?
         included[type] = {} unless included[type]?
@@ -134,7 +277,7 @@ _prepare = (obj, included = {}) ->
                             assocDefinition.ref = association.targetIdentifier
 
                         # add the association type to the map
-                        map[key] = assocType
+                        plain[key]._type = assocType
 
                         # add or expand definition
                         if definition[key]?
@@ -152,7 +295,7 @@ _prepare = (obj, included = {}) ->
                             attributes: []
 
                         # add to map
-                        map[key] = association.target.name.toLowerCase()
+                        plain[key]._type = association.target.name.toLowerCase()
                         attributes.push key
 
             # unionize attributes

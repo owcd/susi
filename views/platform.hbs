@@ -1,0 +1,17 @@
+{{#extend "head"}}
+    <meta name="susi/config/environment" content="%7B%22modulePrefix%22%3A%22susi%22%2C%22environment%22%3A%22development%22%2C%22baseURL%22%3A%22/%22%2C%22locationType%22%3A%22auto%22%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%7D%2C%22APP%22%3A%7B%22name%22%3A%22susi%22%2C%22version%22%3A%220.0.0+%22%7D%2C%22exportApplicationGlobal%22%3Atrue%7D" />
+{{/extend}}
+
+{{#extend "stylesheets"}}
+    <link rel="stylesheet" href="/assets/vendor.css?rev={{rev}}">
+    <link rel="stylesheet" href="assets/susi.css?rev={{rev}}">
+{{/extend}}
+
+<div id="app">
+    
+</div>
+
+{{#extend "scripts"}}
+    <script src="/assets/vendor.js?rev={{rev}}" type="text/javascript"></script>
+    <script src="/assets/susi.js?rev={{rev}}" type="text/javascript"></script>
+{{/extend}}

@@ -1,0 +1,13 @@
+{
+    "restartable": "rs",
+    "ignore": [
+        ".git*",
+        "node_modules*",
+        "client*"
+    ],
+    "verbose": false,
+    "env": {
+        "NODE_ENV": "development"
+    },
+    "ext": "coffee"
+}

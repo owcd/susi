@@ -1,0 +1,31 @@
+<div class="col-md-12">
+    <div class="row start-end-time">
+        <div class="col-md-10">
+            {{#if isModify}}
+                <div class="row">
+                    <div class="col-md-1" style="margin-top:5px;">Von</div>
+                    <div class="col-md-2">{{input value=start class="form-control"}}</div>
+                    <div class="col-md-1" style="margin-top:5px;">bis</div>
+                    <div class="col-md-2">{{input value=end class="form-control"}}</div>
+                </div>
+            {{else}}
+                {{start}} - {{end}}
+            {{/if}}
+        </div>
+        <div class="col-md-2 right">
+            {{#if isModify}}
+                <button type="button" class="btn btn-xs btn-primary" {{action 'save'}}>Speichern</button>
+            {{else}}
+                <button type="button" class="btn btn-xs btn-primary" {{action 'remove'}}>Löschen</button>
+                <button type="button" class="btn btn-xs btn-primary" {{action 'modify'}}>Bearbeiten</button>
+            {{/if}}
+        </div>
+    </div>
+    <div class="row">
+        {{#each games as |game|}}
+            <div class="col-md-{{courtsColumns}}">
+                {{tournaments/tournament-game game=game groups=groups isModify=isModify}}
+            </div>
+        {{/each}}
+    </div>
+</div>

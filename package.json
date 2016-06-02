@@ -27,6 +27,7 @@
     "express": "^4.13.4",
     "express-load": "^1.1.15",
     "express-session": "^1.13.0",
+    "fluent-ffmpeg": "^2.1.0",
     "hbs": "^4.0.0",
     "inflected": "^1.1.6",
     "jsonapi-serializer": "^3.2.1",
@@ -34,9 +35,11 @@
     "moment": "^2.13.0",
     "morgan": "^1.7.0",
     "mysql": "^2.10.2",
-    "nconf": "^0.8.4",
+    "node-schedule": "^1.1.0",
     "rqf": "0.0.2",
     "sequelize": "^3.23.1",
+    "speaker": "^0.3.0",
+    "stream-buffers": "^3.0.0",
     "umzug": "^1.11.0"
   },
   "devDependencies": {

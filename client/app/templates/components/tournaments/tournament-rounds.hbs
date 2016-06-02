@@ -1,0 +1,9 @@
+<div class="row">
+    <div class="col-md-12 right">
+        <button type="button" class="btn btn-primary" {{action 'addRound'}}>Runde erstellen</button>
+    </div>
+</div>
+
+{{#each rounds as |round|}}
+    {{tournaments/tournament-round round=round courts=courts groups=groups}}
+{{/each}}
