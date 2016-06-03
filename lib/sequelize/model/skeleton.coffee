@@ -7,7 +7,7 @@ module.exports = class Skeleton
     requiredFields: []
     include: []
     sort: []
-    limit: 10
+    limit: 1000
     api: 'all'
 
     # private properties
