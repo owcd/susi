@@ -56,6 +56,10 @@ config = convict
             doc: "Audio files path"
             format: String
             default: null
+        timewarp:
+            doc: "Warp any minutes into the future"
+            format: Integer
+            default: 0
 
 ###
 var env = conf.get('env');

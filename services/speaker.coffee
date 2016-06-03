@@ -40,6 +40,11 @@ _scheduleRound = (options) ->
     from = moment().add(options.prepareAnnouncement + 1, 'minutes')
     to = moment(from).add(1, 'minutes')
 
+    # timewarp
+    if config.get('speaker.timewarp') > 0
+        from = from.add(config.get('speaker.timewarp'), 'minutes')
+        to = to.add(config.get('speaker.timewarp'), 'minutes')
+
     # query for round
     ###
     return Round.findAll(
@@ -50,7 +55,6 @@ _scheduleRound = (options) ->
                 $gte: from.toDate()
                 $lt: to.toDate()
     ).each((round) ->
-        console.log 'round', round.id
         # find the games
         Game.findAll(
             where:
@@ -62,37 +66,42 @@ _scheduleRound = (options) ->
 
             # generate game prepare
             generators.prepareGames(games).then((buffer) ->
-                date = moment(round.start).subtract(options.prepareAnnouncement, 'minutes').toDate()
+                date = moment(round.start).subtract(options.prepareAnnouncement, 'minutes')
+                date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(5, 'seconds').toDate()
-                schedule.scheduleJob(date, _play.bind(null, buffer))
+                schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
             # generate game play
             generators.playGames(games).then((buffer) ->
-                date = moment(round.start).toDate()
+                date = moment(round.start)
+                date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(30, 'seconds').toDate()
-                schedule.scheduleJob(date, _play.bind(null, buffer))
+                schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
             # generate round start
             generators.roundStart().then((buffer) ->
-                date = moment(round.start).add(1, 'minutes').toDate()
+                date = moment(round.start).add(1, 'minutes')
+                date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(50, 'seconds').toDate()
-                schedule.scheduleJob(date, _play.bind(null, buffer))
+                schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
             # generate round end warning
             generators.roundEndWarning().then((buffer) ->
-                date = moment(round.end).subtract(1, 'minutes').toDate()
+                date = moment(round.end).subtract(1, 'minutes')
+                date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(55, 'seconds').toDate()
-                schedule.scheduleJob(date, _play.bind(null, buffer))
+                schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
             # generate round end
             generators.roundEnd().then((buffer) ->
-                date = moment(round.end).subtract(5, 'seconds').toDate()
+                date = moment(round.end).subtract(5, 'seconds')
+                date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(60, 'seconds').toDate()
-                schedule.scheduleJob(date, _play.bind(null, buffer))
+                schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
         )
