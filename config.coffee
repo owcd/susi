@@ -58,7 +58,7 @@ config = convict
             default: null
         timewarp:
             doc: "Warp any minutes into the future"
-            format: Integer
+            format: Number
             default: 0
 
 ###

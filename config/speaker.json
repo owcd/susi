@@ -1,6 +1,6 @@
 {
     "speaker": {
         "audio": "/media/move/susi/audio",
-        "timewarp": 60
+        "timewarp": 0
     }
 }
