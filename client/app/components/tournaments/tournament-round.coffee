@@ -42,8 +42,8 @@ TournamentsTournamentRoundComponent = Ember.Component.extend
                 properties[field] = null
                 time = moment(@get(field), 'HH:mm')
                 if time? and time.isValid()
-                    #date = moment(@get('round.tournament.date')).format('YYYY-MM-DD')
-                    date = moment().format('YYYY-MM-DD')
+                    date = moment(@get('round.tournament.date')).format('YYYY-MM-DD')
+                    #date = moment().format('YYYY-MM-DD')
                     timestamp = moment(date + ' ' + @get(field), 'YYYY-MM-DD HH:mm')
                     properties[field] = timestamp
 
