@@ -13,7 +13,8 @@ module.exports.prepareGames = (games) ->
     files = []
     Promise.each(games, (game) ->
         if files.length > 0
-            files.push 'courts_' + game.court_id + '_prepare_cont.wav'
+            # files.push 'prepare_and.wav'
+            files.push 'courts_' + game.court_id + '_cont.wav'
         else
             files.push 'courts_' + game.court_id + '_prepare.wav'
         files.push 'teams_' + game.team1_id + '_vs.wav'
@@ -27,7 +28,10 @@ module.exports.prepareGames = (games) ->
 module.exports.playGames = (games) ->
     files = []
     Promise.each(games, (game) ->
-        files.push 'courts_' + game.court_id + '_playing.wav'
+        if files.length > 0
+            files.push 'courts_' + game.court_id + '_cont.wav'
+        else
+            files.push 'courts_' + game.court_id + '_playing.wav'
         files.push 'teams_' + game.team1_id + '_vs.wav'
         files.push 'playing_vs.wav'
         files.push 'teams_vs_' + game.team2_id + '.wav'

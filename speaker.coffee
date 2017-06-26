@@ -4,8 +4,11 @@ ffmpeg = require 'fluent-ffmpeg'
 path = require 'path'
 stream = require 'stream'
 
+base = '/media/oli/7a73b561-a6e8-4fd5-ab27-e630bb07d6e3/move/susi/2017'
+
 files = []
 court = Math.floor((Math.random() * 4)) + 1
+court = 10
 prepare = true
 if Math.random() > 0.5
     files.push 'courts_' + court + '_prepare.wav'
@@ -14,7 +17,7 @@ else
     files.push 'courts_' + court + '_playing.wav'
 
 # pick challenging team
-team1 = Math.floor((Math.random() * 9)) + 1
+team1 = Math.floor((Math.random() * 8)) + 49
 files.push 'teams_' + team1 + '_vs.wav'
 
 if prepare
@@ -22,8 +25,21 @@ if prepare
 else
     files.push 'playing_vs.wav'
 
-team2 = Math.floor((Math.random() * 4)) + 1
-team2 = (team2 % 4) + 1 if team2 is team1
+team2 = Math.floor((Math.random() * 8)) + 49
+team2 = (team2 % 8) + 49 if team2 is team1
+files.push 'teams_vs_' + team2 + '.wav'
+
+if not prepare
+    files.push 'prepare_and.wav'
+files.push 'courts_11_cont.wav'
+team1 = Math.floor((Math.random() * 8)) + 49
+files.push 'teams_' + team1 + '_vs.wav'
+if prepare
+    files.push 'prepare_and.wav'
+else
+    files.push 'playing_vs.wav'
+team2 = Math.floor((Math.random() * 8)) + 49
+team2 = (team2 % 8) + 49 if team2 is team1
 files.push 'teams_vs_' + team2 + '.wav'
 
 speaker = new Speaker(
@@ -39,7 +55,7 @@ Promise.each(files, (file) ->
     #console.log 'convert', file
     ffstream = new stream.PassThrough()
     command = ffmpeg()
-        .input(path.join('/media/move/susi/audio', file))
+        .input(path.join(base, file))
         .audioCodec('pcm_s16le')
         .audioChannels(2)
         .audioFrequency(44100)

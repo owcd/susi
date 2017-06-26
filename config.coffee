@@ -18,7 +18,7 @@ config = convict
         port:
             doc: "port to bind"
             format: 'port'
-            default: 8080
+            default: 8088
     database:
         host:
             doc: "Database host name/IP"
