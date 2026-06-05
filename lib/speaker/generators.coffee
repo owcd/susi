@@ -83,7 +83,7 @@ _prepareAudioBuffer = (files) ->
                 .audioFrequency(44100)
                 .noVideo()
                 .output(streamBuffer)
-                .format('u16le')
+                .format('s16le')
                 .on('start', (commandLine) ->
                         console.log('Spawned Ffmpeg with command: ' + commandLine)
                     ).on('error', reject)
