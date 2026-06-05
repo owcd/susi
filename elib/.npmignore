@@ -1,0 +1,10 @@
+# exclude modules and temp files
+*~
+*.bak
+
+# ignore dist and other js files
+*.map
+*.js
+.DS_Store
+.bin
+/node_modules

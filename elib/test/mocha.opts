@@ -1,0 +1,8 @@
+--compilers coffee:coffee-script/register
+--require ./test/common.coffee
+--reporter spec
+--ui bdd
+--colors
+--timeout 60000
+--slow 100
+./test/configure.coffee

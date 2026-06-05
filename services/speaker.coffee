@@ -31,6 +31,13 @@ speaker = new Speaker(
 module.exports = (options = {}) ->
     # set defaults
     options.prepareAnnouncement = 5 unless options.prepareAnnouncement?
+    options.roundBreak = 5 unless options.roundBreak? # break between rounds in minutes
+    options.playAnnouncementOffset = 2 unless options.playAnnouncementOffset? # offset of the play announcement
+    options.sponsoringDelay = 3 unless options.sponsoringDelay? # delay in minutes for the sponsoring announcement, set to 0 to disable
+
+    # 8 minutes round with 7 minutes break
+    options.roundBreak = 7
+    options.playAnnouncementOffset = 4
 
     # set repeating interval
     setInterval(_scheduleRound.bind(null, options), 60 * 1000)
@@ -77,7 +84,7 @@ _scheduleRound = (options) ->
 
             # generate game play
             generators.playGames(games).then((buffer) ->
-                date = moment(round.start).subtract(1, 'minutes')
+                date = moment(round.start).subtract(options.roundBreak - options.playAnnouncementOffset, 'minutes')
                 date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(30, 'seconds').toDate()
                 schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
@@ -91,9 +98,20 @@ _scheduleRound = (options) ->
                 schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
             )
 
+            # generate sponsor announcement
+            date = moment(round.start)
+            # console.log('starting minute & hour', date.minute(), date.hour())
+            if options.sponsoringDelay > 0 && date.minute() < 10
+                generators.announceSponsors(date.hour() % 2).then((buffer) ->
+                    date = moment(round.start).add(options.sponsoringDelay, 'minutes')
+                    date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
+                    schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
+                )
+
+
             # generate round end warning
             generators.roundEndWarning().then((buffer) ->
-                date = moment(round.end).subtract(2, 'minutes')
+                date = moment(round.end).subtract(options.roundBreak + 1, 'minutes')
                 date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(55, 'seconds').toDate()
                 schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
@@ -101,7 +119,7 @@ _scheduleRound = (options) ->
 
             # generate round end
             generators.roundEnd().then((buffer) ->
-                date = moment(round.end).subtract(66, 'seconds')
+                date = moment(round.end).subtract(options.roundBreak * 60 + 6, 'seconds')
                 date = date.subtract(config.get('speaker.timewarp'), 'minutes') if config.get('speaker.timewarp') > 0
                 #date = moment().add(60, 'seconds').toDate()
                 schedule.scheduleJob(date.toDate(), _play.bind(null, buffer))
@@ -111,6 +129,11 @@ _scheduleRound = (options) ->
     ).catch((err) ->
         console.error err
     )
+
+# play the stream
+_playStream = (stream) ->
+    stream.on 'end', () -> stream.unpipe speaker
+    stream.pipe speaker
 
 # play the buffer
 _play = (buffer) ->

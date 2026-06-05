@@ -13,7 +13,7 @@ config = convict
     server:
         ip:
             doc: "IP address to bind"
-            format: 'ipaddress'
+            format: String
             default: '0.0.0.0'
         port:
             doc: "port to bind"

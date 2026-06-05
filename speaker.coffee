@@ -4,11 +4,12 @@ ffmpeg = require 'fluent-ffmpeg'
 path = require 'path'
 stream = require 'stream'
 
-base = '/media/oli/7a73b561-a6e8-4fd5-ab27-e630bb07d6e3/move/susi/2017'
+base = '/media/disc/susi/2026'
 
+offset = 358
 files = []
 court = Math.floor((Math.random() * 4)) + 1
-court = 10
+court = 80
 prepare = true
 if Math.random() > 0.5
     files.push 'courts_' + court + '_prepare.wav'
@@ -17,7 +18,7 @@ else
     files.push 'courts_' + court + '_playing.wav'
 
 # pick challenging team
-team1 = Math.floor((Math.random() * 8)) + 49
+team1 = Math.floor((Math.random() * 8)) + offset
 files.push 'teams_' + team1 + '_vs.wav'
 
 if prepare
@@ -25,21 +26,21 @@ if prepare
 else
     files.push 'playing_vs.wav'
 
-team2 = Math.floor((Math.random() * 8)) + 49
-team2 = (team2 % 8) + 49 if team2 is team1
+team2 = Math.floor((Math.random() * 8)) + offset
+team2 = (team2 % 8) + offset if team2 is team1
 files.push 'teams_vs_' + team2 + '.wav'
 
 if not prepare
     files.push 'prepare_and.wav'
-files.push 'courts_11_cont.wav'
-team1 = Math.floor((Math.random() * 8)) + 49
+files.push 'courts_'+(court+1)+'_cont.wav'
+team1 = Math.floor((Math.random() * 8)) + offset
 files.push 'teams_' + team1 + '_vs.wav'
 if prepare
     files.push 'prepare_and.wav'
 else
     files.push 'playing_vs.wav'
-team2 = Math.floor((Math.random() * 8)) + 49
-team2 = (team2 % 8) + 49 if team2 is team1
+team2 = Math.floor((Math.random() * 8)) + offset
+team2 = (team2 % 8) + offset if team2 is team1
 files.push 'teams_vs_' + team2 + '.wav'
 
 speaker = new Speaker(
@@ -49,7 +50,6 @@ speaker = new Speaker(
 )
 
 pass = new stream.PassThrough()
-pass.pipe speaker
 
 Promise.each(files, (file) ->
     #console.log 'convert', file
@@ -65,19 +65,25 @@ Promise.each(files, (file) ->
         .on('start', (commandLine) ->
             console.log('Spawned Ffmpeg with command: ' + commandLine)
         )
+        .on('error', (err) ->
+            console.log('Command failed with error:', err)
+        )
 
     ffstream.on 'data', (chunk) ->
         pass.write chunk
 
     # promise
     new Promise (resolve) ->
-        command.on 'end', resolve
+        ffstream.on 'end', resolve
         command.run()
 ).then( ->
+    pass.pipe speaker
     new Promise (resolve) ->
         pass.once 'drain', resolve
 ).then( ->
     Promise.delay(1000)
+).catch( (err) ->
+    console.log err
 )
 
 speaker.on 'flush', ->
