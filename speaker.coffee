@@ -61,7 +61,7 @@ Promise.each(files, (file) ->
         .audioFrequency(44100)
         .noVideo()
         .output(ffstream)
-        .format('u16le')
+        .format('s16le')
         .on('start', (commandLine) ->
             console.log('Spawned Ffmpeg with command: ' + commandLine)
         )
