@@ -36,8 +36,9 @@ module.exports = (options = {}) ->
     options.sponsoringDelay = 3 unless options.sponsoringDelay? # delay in minutes for the sponsoring announcement, set to 0 to disable
 
     # 8 minutes round with 7 minutes break
-    options.roundBreak = 7
-    options.playAnnouncementOffset = 4
+    #options.prepareAnnouncement = 7
+    #options.roundBreak = 7
+    #options.playAnnouncementOffset = 4
 
     # set repeating interval
     setInterval(_scheduleRound.bind(null, options), 60 * 1000)

@@ -62,7 +62,7 @@ module.exports.roundStart = ->
 
 # sponsoring
 module.exports.announceSponsors = (full) ->
-    files = ['sponsoren_allgemein.wav']
+    files = ['sponsoren.wav']
     # if full
     #    files.push 'sponsoren2.wav'
     _prepareAudioBuffer(files)
